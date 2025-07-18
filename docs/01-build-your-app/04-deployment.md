@@ -2,19 +2,38 @@
 sidebar_label: 4. Deploying Serverpod
 ---
 
-# Deploying Serverpod
+# 🚀 Deploying Serverpod
 
-## Server requirements
+Let’s put your Serverpod app on the internet! Whether you're using Docker or compiling natively, Serverpod is flexible and gives you control over how and where you deploy.
+
+## 🧰 Server Requirements
+
+Serverpod apps compile to native code via Dart, which means they can run anywhere Dart does. You can:
+
+- Use Docker (recommended for most users)
+- Compile and run natively on a Linux server
+
+**The easiest method is using Docker**. Your Serverpod project includes a ready-to-use `Dockerfile` and `docker-compose.yaml`.
 
 Serverpod is written in Dart and compiles to native code, allowing it to run on any platform supported by the [Dart tooling](https://dart.dev/get-dart#system-requirements).
 
 Many users prefer to deploy Serverpod using Docker. The project includes a basic Dockerfile that you can use to build a Docker image, which can then be run on any Docker-compatible platform.
 
-For non-Docker deployments, you'll need to [compile the Dart code](https://dart.dev/tools/dart-compile) and manually copy your assets and configuration files to the server. This manual step is necessary since [asset bundling is not yet supported by Dart](https://github.com/dart-lang/sdk/issues/55195).
 
-## Server configuration
 
-By default Serverpod is active on three ports:
+**For non-Docker deployments**, you'll need to [compile the Dart code](https://dart.dev/tools/dart-compile) and manually copy your assets and configuration files to the server. This manual step is necessary since [asset bundling is not yet supported by Dart](https://github.com/dart-lang/sdk/issues/55195).
+If you prefer manual setup, you can compile Dart code and deploy your server binary with:
+
+```bash
+dart compile exe bin/main.dart
+```
+
+Then manually copy your `config/` files and assets to the server. 
+Note: Dart doesn’t currently support asset bundling ([issue #55195](https://github.com/dart-lang/sdk/issues/55195)).
+
+## ⚙️ Server Configuration
+
+By default, a Serverpod server opens three ports:
 
 - **8080**: The main port for the server - this is where the generated client will connect to.
 - **8081**: The port for connecting with the [Serverpod Insights](../09-tools/01-insights.md) tooling. You may want to restrict which IP addresses can connect to this port.
@@ -22,7 +41,7 @@ By default Serverpod is active on three ports:
 
 You will also need to configure the database connection in the `config/production.yaml` file and **securely** provide the `config/passwords.yaml` file to the server.
 
-## Health checks
+## ❤️ Health Checks
 
 The server exposes a health check on the root endpoint `/` on port **8080**. Load balancers and monitoring systems can use this endpoint to verify that your server is running and healthy. The endpoint returns a basic health status response.
 
@@ -35,3 +54,11 @@ Serverpod Cloud is currently in private beta. Request access by [filling out thi
 ## Other deployment options
 
 Check out [choosing a deployment strategy](../07-deployments/01-deployment-strategy.md) for more information on how to deploy your Serverpod application to other platforms.
+
+## ✅ Summary
+
+- You can deploy Serverpod with Docker or native binaries
+- Configure your `config/production.yaml` and secure your secrets
+- Serverpod Cloud is the simplest way to get started
+
+Next up? We’ll look at **authentication**, so you can control who accesses your app.
