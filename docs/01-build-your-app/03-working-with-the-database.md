@@ -2,13 +2,16 @@
 sidebar_label: 3. Working with the database
 ---
 
-# Working with the database
+# 🗃️ Working with the database
 
-In this section, we will build upon the models we created in the previous section and add a database to store the recipes that users create in the app. This will allow our application to persist data between sessions.
+Now that we’ve created a model for our `Recipe`, it’s time to start storing real data — saving and retrieving recipes from a database. With Serverpod, you don’t need to write SQL. Instead, we’ll use its built-in ORM (Object-Relational Mapping) system.
 
-## Object relation mapping
+You can think of the ORM like a smart pantry assistant: you define the ingredients (models), and it keeps track of them in the database for you.🍳
 
-Any Serverpod model can be mapped to the database through Serverpod's object relation mapping (ORM). To enable database storage for our recipe model, simply add the `table` keyword to the `Recipe` model in our `recipe.spy.yaml` file. This will map the model to a new table in the database called `recipes`.
+
+## 🧾 Step 1: Enable Database Storage
+
+Update your `recipe.spy.yaml` model by adding a `table` keyword. This tells Serverpod to generate database bindings:
 
 <!--SNIPSTART 03-table-model-->
 ```yaml
@@ -28,14 +31,15 @@ fields:
 <!--SNIPEND-->
 
 :::info
+The table keyword tells Serverpod: “Hey, I want to store this in the database!”
+It creates a matching table in PostgreSQL — think of it like a labeled container in your pantry where each row is a saved recipe.
+
 Check out the reference for [database models](../06-concepts/02-models.md#keywords-1) for an overview of all available keywords.
 :::
 
-## Migrations
+##  ⚙️ Step 2: Generate Code and Create a Migrations
 
-Database migrations in Serverpod provide a way to safely evolve your database schema over time. When you make changes to your models that affect the database structure, you need to create a migration. A migration consists of SQL queries that update the database schema to match your model changes.
-
-To create a migration, follow these two steps in order:
+You’ll need to:
 
 1. Run `serverpod generate` to update the generated code based on your model changes.
 2. Run `serverpod create-migration` to create the necessary database migration.
@@ -45,10 +49,14 @@ $ cd magic_recipe/magic_recipe_server
 $ serverpod generate
 $ serverpod create-migration
 ```
-
+:::info
 Each time you run `serverpod create-migration`, a new migration file will be created in your _migrations_ folder. These step-by-step migrations provide a history of your database changes and allow you to roll back changes if needed.
+:::
 
-## Writing to the database
+
+## 📥 Step 3: Save Recipes to the Database
+
+Update your `RecipeEndpoint` so the generated recipe is **inserted into the database**.
 
 Now that we've added the `table` keyword to our `Recipe` model, it becomes a `TableRow` type, giving us access to database operations. Serverpod automatically generates database bindings that we can access through the static `db` field of the `Recipe` class. Let's use the `insertRow` method to save new recipes to the database:
 
@@ -73,13 +81,15 @@ class RecipeEndpoint extends Endpoint {
   }
 
 ```
+
+:::tip Why insertRow?
+The `insertRow` method saves a new object to the database. It returns the same object, but with its unique `id` now set — useful if you want to reference it later.
+:::
 <!--SNIPEND-->
 
-## Reading from the database
+## 📤 Step 4: Fetch All Recipes
 
-Next, let's add a new method to the `RecipeEndpoint` class that will return all the recipes that we have created and saved to the database.
-
-To make sure that we get them in the correct order, we sort them by the date they were created.
+Let’s add a new method to the `RecipeEndpoint` class to retrieve all previously created recipes, sorted by date:
 
 <!--SNIPSTART 03-persisted-endpoint {"selectedLines": ["10-12", "52-61"]}-->
 ```dart
@@ -100,6 +110,7 @@ class RecipeEndpoint extends Endpoint {
 }
 ```
 <!--SNIPEND-->
+This will return a list of recipes, newest first.
 
 <details>
 
@@ -180,7 +191,7 @@ The when adding a `table` to the model class definition, the model will now give
 The `insertRow` method is used to insert a new row in the database. The `find` method is used to query the database and get all the rows of a specific type. See [CRUD](../06-concepts/06-database/05-crud.md) and [relation queries](../06-concepts/06-database/07-relation-queries.md) for more information.
 :::
 
-## Generate the code
+## 📤 Step 5: Generate the code
 
 Like before, when you change something that has an effect on the client code, you need to run `serverpod generate`. We don't need to run `serverpod create-migrations` again because we already created a migration in the previous step and haven't done any changes that affect the database.
 
@@ -189,7 +200,7 @@ $ cd magic_recipe/magic_recipe_server
 $ serverpod generate
 ```
 
-## Call the endpoint from the app
+## 📤 Step 6: Call the endpoint from the app
 
 Now that we have updated the endpoint, we can call it from the app. We do this in the `magic_recipe_flutter/lib/main.dart` file. We will call the `getRecipes` method when the app starts and store the result in a list of `Recipe` objects. We will also update the UI to show the list of recipes.
 
@@ -421,11 +432,9 @@ class ResultDisplay extends StatelessWidget {
 ```
 <!--SNIPEND-->
 
-## Run the app
+## ▶️ Step 7: Run the app
 
-To run the application with database support, follow these steps in order:
-
-First, start the database and apply migrations:
+To run the application with database support, follow these steps:
 
 ```bash
 $ cd magic_recipe/magic_recipe_server
@@ -437,14 +446,14 @@ $ dart bin/main.dart --apply-migrations  # Apply any pending migrations
 The `--apply-migrations` flag is safe to use during development - if no migrations are pending, it will simply be ignored. For production environments, you may want more controlled migration management.
 :::
 
-Next, launch the Flutter app:
+Then launch your Flutter app:
 
 ```bash
 $ cd magic_recipe/magic_recipe_flutter
 $ flutter run -d chrome
 ```
 
-## Summary
+## ✅ Summary
 
 You've now learned the fundamentals of Serverpod:
 
