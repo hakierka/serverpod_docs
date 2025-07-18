@@ -1,44 +1,54 @@
-# Real-time communication
+---
+sidebar_label: Pixorama - Real-time communication
+---
 
-Have you ever found real-time communication in apps challenging? It doesn't have to be. Today, we're diving into how to build a collaborative drawing experience using Flutter and Serverpod. We'll call our app Pixorama - a fun and interactive project inspired by Reddit's r/place. Pixorama lets users draw together on a shared grid, with every pixel placed updating in real-time across all connected devices.
+# 🎨 Pixorama - Real-time communication
+Ever struggled with building real-time experiences in your apps? You’re not alone — but it doesn’t have to be hard. In this guide, you’ll learn how to build a collaborative pixel art app using Flutter and Serverpod. The project is called **Pixorama**, inspired by Reddit’s r/place — a live shared canvas where users draw together on a grid, and every change is instantly visible to everyone.
 
 <div style={{ position : 'relative', paddingBottom : '56.25%', height : '0' }}><iframe style={{ position : 'absolute', top : '0', left : '0', width : '100%', height : '100%' }} width="560" height="315" src="https://www.youtube-nocookie.com/embed/iCDeAvuMj8I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
 
 _This tutorial is also available as a video._
 
 :::info
-
-Before you begin, make sure that you have [installed Serverpod](/). It's also recommended that you read the [Get started with Mini](../../serverpod-mini.md) guide.
-
+Before starting, make sure you’ve [installed Serverpod](/) and read the [Get started with Mini](../../serverpod-mini.md) guide.
 :::
 
-You can try out the final app here: [https://pixorama.live](https://pixorama.live)
+Try it live: [https://pixorama.live](https://pixorama.live)
 
 ![Serverpod Insights](/img/tutorial/pixorama/pixorama.png)
 
-## What is Pixorama?
+## 🛠 What You’ll Build
 
-Pixorama is a collaborative drawing app where users can place pixels on a grid to create images together. Imagine two instances of the app running simultaneously - draw a pixel on one and watch it instantly appear on the other. This seamless synchronization happens because each time you draw a pixel, a message is sent to the server, which then broadcasts it to all connected clients.
+Pixorama is a collaborative pixel editor:
+- Users place pixels on a shared canvas.
+- Every update is broadcast in real time.
+- Serverpod manages connections, syncing, and streaming — no WebSocket boilerplate needed.
 
-## Understanding real-time communication
+## 🔄 How Real-Time Communication Works
+Traditional REST APIs operate on a request-response basis. Real-time apps, on the other hand, require a persistent connection. Serverpod 2.1 introduces **streaming methods**, letting you return a stream from an endpoint that stays open.
 
 In traditional REST APIs, communication with the server involves sending a request and receiving a response. However, real-time communication requires the server to push updates to clients as they happen. This is commonly achieved using web sockets, which maintain an open connection between the server and client, allowing for continuous data exchange. While web sockets can be tricky, requiring data serialization and connection management, Serverpod simplifies this process.
 
 With the release of Serverpod 2.1, a new feature called [streaming methods](../../concepts/streams) was introduced. This feature allows us to return a stream from a server method and call it from our app. Serverpod handles the underlying web socket connection for us. Now, let's get started with building Pixorama.
 
-## Setting up the project
+## 📁 Step 1: Create a Project
+We'll use Serverpod Mini — a lightweight version without a database.
 
 We begin by creating a new project with the `serverpod create` command. Since we don't need to store data in a database, we'll use the Mini version of Serverpod. Serverpod Mini is a lightweight version of Serverpod without a database, advanced logging, and other features - perfect for our needs. Create the project with the command:
 
 ```bash
 serverpod create pixorama --mini
 ```
+This will create a server and client Flutter app. Open in VS Code.
 
-Now, let's open the project in VS Code and explore the structure. The server code resides in the `pixorama_server` package. We'll start by creating models - classes that we can serialize and pass between the client and server. Our models will be placed in the `lib/src/models` directory.
+The server code resides in the `pixorama_server` package. We'll start by creating models - classes that we can serialize and pass between the client and server. Our models will be placed in the `lib/src/models` directory.
 
-## Creating models
+## 📂 Step 2: Define Your Models
+Delete the default `example.spy.yaml`, as we won't need it. 
 
-First, we remove the `example.spy.yaml` model, as we won't need it. We'll create two new models: `ImageData` and `ImageUpdate`. Place them in the `lib/src/models` directory and call them `image_data.spy.yaml` and `image_update.spy.yaml`.
+Create two new ones in `lib/src/models/`:
+We'll create two new models: `ImageData` and `ImageUpdate`. 
+Place them in the `lib/src/models` directory and call them `image_data.spy.yaml` and `image_update.spy.yaml`.
 
 ```yaml
 # lib/src/models/image_data.spy.yaml
@@ -63,18 +73,20 @@ fields:
 
 The `ImageUpdate` model captures changes to individual pixels, including the pixel's index in the byte array and its new color value.
 
-With our models defined, we run serverpod generate to create the actual Dart files for these models. Run the command from your server's root directory (`pixorama_server`).
+With our models defined, let's generate the code to create the actual Dart files for these models. Run the command from your server's root directory (`pixorama_server`).
 
 ```bash
 cd pixorama_server
 serverpod generate
 ```
 
-## Building the server
+## 💻 Step 3: Build the Server Endpoint
 
 Next, we'll build the server. We need to create a new endpoint. An endpoint is a connection point for the client to interact with the server. In Serverpod, you create endpoints by extending the `Endpoint` class and placing it in the `lib/src/endpoints` directory. The endpoint will manage our pixel data and handle client updates.
 
-We will start by creating a `PixoramaEndpoint` class, which we place in a file called `pixorama_endpoint.dart` in the `lib/src/endpoints` directory.
+Create `lib/src/endpoints/pixorama_endpoint.dart`. This endpoint stores pixel data and broadcasts updates to clients.
+
+Write `PixoramaEndpoint` class:
 
 ```dart
 // lib/src/endpoints/pixorama_endpoint.dart
@@ -195,17 +207,19 @@ class PixoramaEndpoint extends Endpoint {
 
 That's all the code we need to write for the server side. To make the new endpoint available to our Flutter app, we run serverpod generate in the root directory of our server.
 
+Then regenerate:
 ```bash
 cd pixorama_server
 serverpod generate
 ```
 
-## Building the Flutter app
+## 📱 Step 4: Build the Flutter App
 
 With the server side complete, it's time to build the Flutter app. When we created the project, Serverpod set up a basic Flutter app for us in the `pixorama_flutter` package.
 
 First, we will use the pixels package to draw our pixel editor. Import it by running the following command in your `pixorama_flutter` directory:
 
+Add the `pixels` package:
 ```bash
 cd pixorama_flutter
 flutter pub add pixels
@@ -379,7 +393,7 @@ class _PixoramaState extends State<Pixorama> {
 }
 ```
 
-## Running Pixorama
+## 📚 Run and Test
 
 To test Pixorama, start the server by navigating to the `pixorama_server` directory and running:
 
@@ -395,9 +409,8 @@ flutter run -d chrome
 
 You can also start a second instance of the app to see real-time updates reflected across both instances.
 
-## Conclusion
+## 🎉 Done!
+You’ve built a real-time collaborative app in under 200 lines of code.
 
-This project was a brief introduction to building real-time apps with Flutter and Serverpod. With less than a page of code on the server side, we created a collaborative drawing app that's both fun and functional. You can find the full Pixorama code on GitHub here:
-[https://github.com/serverpod/pixorama](https://github.com/serverpod/pixorama)
+Source code: [https://github.com/serverpod/pixorama](https://github.com/serverpod/pixorama)
 
-Happy coding!
