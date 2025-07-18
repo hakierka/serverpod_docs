@@ -19,7 +19,7 @@ Serverpod is the backend framework we always wanted: zero boilerplate, fully typ
 
 | 🧪 I want to start building with Serverpod      | 📚 I want to learn how to use Serverpod |
 | ----------- | ----------- |
-| 👉 [Get Started](./get-started)     | 👉 [Explore Tutorials](./tutorials)       |
+| 👉 [Get Started](/docs/02-get-started.md)     | 👉 [Explore Tutorials](/docs/03-build-your-app/index.md)       |
 
 ---
 
@@ -73,4 +73,4 @@ print(greeting); // Hello, World
 - Background tasks (schedule in the future or trigger async)
 - Native support for file uploads and cloud storage
 
-> 💡 Start building now → [Get Started](./get-started)
+> 💡 Start building now → [Get Started](/docs/02-get-started.md)
