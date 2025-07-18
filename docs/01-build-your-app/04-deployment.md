@@ -61,4 +61,3 @@ Check out [choosing a deployment strategy](../07-deployments/01-deployment-strat
 - Configure your `config/production.yaml` and secure your secrets
 - Serverpod Cloud is the simplest way to get started
 
-Next up? We’ll look at **authentication**, so you can control who accesses your app.
